@@ -63,6 +63,19 @@ class LGWebOSClient {
       targetPort = (!targetPort || targetPort === 3001) ? 3000 : targetPort;
     }
 
+    // In modern Chrome with Local Network Access (LNA), public HTTPS origins (like Vercel)
+    // require user permission for local network access. Fetching the target IP triggers Chrome's prompt.
+    if (isHttps && typeof window !== 'undefined' && typeof window.fetch === 'function') {
+      try {
+        await fetch(`https://${device.ip}:${targetPort}/`, {
+          method: 'GET',
+          mode: 'no-cors',
+        });
+      } catch {
+        // Expected with self-signed certificate, but triggers Chrome LNA dialog
+      }
+    }
+
     const wsUrl = isHttps
       ? `wss://${device.ip}:${targetPort}`
       : `ws://${device.ip}:${targetPort}`;

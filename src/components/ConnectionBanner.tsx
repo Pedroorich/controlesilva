@@ -234,6 +234,33 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
           </div>
         </div>
 
+        {/* Direct Local Network Alternative & Chrome Guide */}
+        <div className="p-3 rounded-xl bg-cyan-950/20 border border-cyan-800/40 text-[11px] text-slate-300 space-y-2">
+          <div className="flex items-center gap-1.5 font-bold text-cyan-300">
+            <span>🚀 Alternativa 100% Direta (Sem Bloqueios do Chrome):</span>
+          </div>
+          <p className="leading-relaxed">
+            Se o Google Chrome continuar bloqueando a conexão WSS no link da Vercel, você tem duas opções simples que funcionam de primeira:
+          </p>
+          <div className="space-y-1.5 pl-1 border-l-2 border-cyan-500/50">
+            <p>
+              <strong>Opção A (Servidor Local no PC):</strong> Abra no celular o endereço:
+              <br />
+              <code className="text-cyan-300 font-mono text-xs bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700 select-all">http://192.168.1.44:3000</code>
+              <br />
+              <span className="text-[10px] text-slate-400">
+                (Como é conexão direta na rede Wi-Fi, não exige certificado e conecta instantaneamente!).
+              </span>
+            </p>
+            <p className="pt-1">
+              <strong>Opção B (Outro navegador no celular):</strong> Abra o link da Vercel no <strong>Samsung Internet</strong> ou <strong>Firefox</strong>, que não possuem a trava de rede local do Chrome.
+            </p>
+            <p className="pt-1">
+              <strong>Opção C (Desativar a trava no Chrome):</strong> No Chrome do celular, digite <code className="text-cyan-300 font-mono text-[10px]">chrome://flags</code>, procure por <code className="text-cyan-300 font-mono text-[10px]">Local Network Access</code> e mude para <strong>Disabled</strong>.
+            </p>
+          </div>
+        </div>
+
         {/* Collapsible TV Menu Guide */}
         <div className="border-t border-slate-800 pt-2.5">
           <button
