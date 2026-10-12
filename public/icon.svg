@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="btn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <linearGradient id="red" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#dc2626" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#bg)" />
+  <!-- Remote Body Outline -->
+  <rect x="136" y="56" width="240" height="400" rx="48" fill="#1e293b" stroke="#334155" stroke-width="6" />
+  <!-- Power button -->
+  <circle cx="196" cy="116" r="22" fill="url(#red)" />
+  <path d="M196 104v12M190 110a8 8 0 1 0 12 0" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+  <!-- Status LED -->
+  <circle cx="316" cy="116" r="10" fill="#10b981" />
+  <!-- D-Pad wheel -->
+  <circle cx="256" cy="256" r="80" fill="#0f172a" stroke="#475569" stroke-width="4" />
+  <circle cx="256" cy="256" r="34" fill="url(#btn)" />
+  <text x="256" y="262" font-family="sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">OK</text>
+  <!-- Up Down Left Right dots/triangles -->
+  <path d="M256 190l-8 12h16z" fill="#94a3b8" />
+  <path d="M256 322l-8-12h16z" fill="#94a3b8" />
+  <path d="M190 256l12-8v16z" fill="#94a3b8" />
+  <path d="M322 256l-12-8v16z" fill="#94a3b8" />
+  <!-- Vol and Ch rockers -->
+  <rect x="176" y="360" width="36" height="64" rx="10" fill="#0f172a" stroke="#334155" stroke-width="2" />
+  <text x="194" y="380" font-family="sans-serif" font-size="16" fill="#94a3b8" text-anchor="middle">+</text>
+  <text x="194" y="414" font-family="sans-serif" font-size="16" fill="#94a3b8" text-anchor="middle">-</text>
+  <rect x="300" y="360" width="36" height="64" rx="10" fill="#0f172a" stroke="#334155" stroke-width="2" />
+  <text x="318" y="380" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">▲</text>
+  <text x="318" y="414" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">▼</text>
+</svg>
