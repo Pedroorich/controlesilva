@@ -13,6 +13,7 @@ import { KeyboardModal } from '@/components/KeyboardModal';
 import { VoiceModal } from '@/components/VoiceModal';
 import { NumpadModal } from '@/components/NumpadModal';
 import { SettingsModal } from '@/components/SettingsModal';
+import { ConnectionBanner } from '@/components/ConnectionBanner';
 import { remoteManager } from '@/lib/tvProtocols/remoteManager';
 import { lgClient } from '@/lib/tvProtocols/lgWebOS';
 import {
@@ -127,35 +128,14 @@ export default function RemoteControlPage() {
           enableSound={settings.soundEnabled}
         />
 
-        {/* Pairing notification prompt */}
-        {status === 'pairing_prompt' && (
-          <div className="w-full px-4 pt-3">
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-600/30 to-amber-700/20 border-2 border-amber-500/60 shadow-lg shadow-amber-500/10 flex items-start gap-3 animate-pulse">
-              <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="text-xs font-bold text-amber-300">Confirmação na TV necessária</h4>
-                <p className="text-[11px] text-amber-100/90 leading-relaxed mt-0.5">
-                  Uma mensagem de pareamento foi exibida na tela da sua TV LG. Clique em <strong>&quot;Permitir&quot;</strong> ou <strong>&quot;Sim&quot;</strong> usando as teclas da TV para liberar o acesso.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* HTTPS / SSL Helper Warning if disconnected */}
-        {status === 'error' && (
-          <div className="w-full px-4 pt-3">
-            <div className="p-3 rounded-2xl bg-rose-950/40 border border-rose-800/60 text-xs text-rose-200 flex items-start gap-2.5">
-              <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <span className="font-semibold block text-rose-300">Não foi possível conectar</span>
-                <span className="text-[11px] text-rose-200/80 leading-tight block mt-0.5">
-                  Certifique-se de que a TV está no mesmo Wi-Fi. Abra as Configurações ⚙️ no topo para conferir o IP ou aceitar o certificado SSL.
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Connection status and Assistant Banner */}
+        <ConnectionBanner
+          status={status}
+          statusMessage={statusMessage}
+          device={activeDevice}
+          onReconnect={handleReconnect}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+        />
 
         {/* Main Remote Layout */}
         <div className="w-full px-4 flex flex-col gap-4 mt-3">

@@ -145,33 +145,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] text-slate-400">Endereço IP da TV:</label>
+              <label className="text-[11px] text-slate-400 font-medium">Endereço IP da TV:</label>
               <button
                 type="button"
                 onClick={() => setShowGuide(!showGuide)}
                 className="text-[11px] text-cyan-400 hover:underline flex items-center gap-1"
               >
                 <HelpCircle className="w-3 h-3" />
-                Como achar o IP?
+                Como achar o IP na TV?
               </button>
             </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={tvIp}
-                onChange={(e) => setTvIp(e.target.value)}
-                placeholder="Ex: 192.168.1.100"
-                className="flex-1 h-11 px-3.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-sm focus:border-cyan-400 outline-none"
-              />
-              <input
-                type="number"
-                value={tvPort}
-                onChange={(e) => setTvPort(Number(e.target.value))}
-                placeholder="3001"
-                className="w-20 h-11 px-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-sm text-center focus:border-cyan-400 outline-none"
-                title="Porta SSL da LG TV (3001 para WSS, 3000 para WS)"
-              />
+            <input
+              type="text"
+              value={tvIp}
+              onChange={(e) => setTvIp(e.target.value)}
+              placeholder="Ex: 192.168.1.196"
+              className="w-full h-11 px-3.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-sm focus:border-cyan-400 outline-none"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] text-slate-400 font-medium">Porta de Rede (Port):</label>
+              <span className="text-[10px] text-slate-400">Padrão LG: 3001 (WSS) / 3000 (WS)</span>
             </div>
+            <input
+              type="number"
+              value={tvPort}
+              onChange={(e) => setTvPort(Number(e.target.value))}
+              placeholder="3001"
+              className="w-full h-11 px-3.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-sm focus:border-cyan-400 outline-none"
+            />
+            <p className="text-[10px] text-slate-400 leading-normal">
+              💡 <strong>O que é o número 3001?</strong> É a porta padrão do sistema webOS da LG. Você <strong>NÃO precisa procurar esse número na sua TV</strong> (ele já vem de fábrica). Apenas o IP deve ser pego no menu da TV.
+            </p>
           </div>
 
           {/* Guide dropdown */}
@@ -179,35 +186,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="p-3 rounded-xl bg-slate-950 border border-cyan-900/50 text-xs text-slate-300 flex flex-col gap-2 animate-in fade-in">
               <span className="font-bold text-cyan-400">Como descobrir o IP na sua TV LG:</span>
               <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-300">
-                <li>Na TV, aperte o botão de <strong>Configurações ⚙️</strong></li>
+                <li>Na TV, aperte o botão de <strong>Configurações ⚙️</strong> no controle</li>
                 <li>Vá em <strong>Rede</strong> (ou <em>Geral &gt; Rede</em>)</li>
                 <li>Selecione <strong>Conexão Wi-Fi</strong> &gt; <strong>Configurações Avançadas de Wi-Fi</strong></li>
-                <li>Veja o campo <strong>Endereço IP</strong> (ex: 192.168.1.X ou 10.0.0.X) e digite acima!</li>
+                <li>Veja o campo <strong>Endereço IP</strong> (ex: 192.168.1.196) e digite acima!</li>
               </ol>
             </div>
           )}
         </div>
 
-        {/* SSL / WSS Helper Card for Vercel */}
-        <div className="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-800/40 flex flex-col gap-2.5">
+        {/* SSL / WSS Helper Card */}
+        <div className="p-4 rounded-2xl bg-cyan-950/30 border border-cyan-700/50 flex flex-col gap-3">
           <div className="flex items-center gap-2 text-cyan-300 text-xs font-semibold">
             <ShieldCheck className="w-4 h-4 text-cyan-400" />
-            Conexão Segura na Vercel (HTTPS / WSS)
+            Liberar Conexão no Navegador (Porta 3001)
           </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            Como este app roda na web via HTTPS na Vercel, seu navegador no celular precisa autorizar o certificado interno da TV LG uma única vez:
+          <p className="text-[11px] text-slate-300 leading-relaxed">
+            Como você está acessando pela web segura (HTTPS na Vercel), seu navegador bloqueia a TV LG até você autorizar o certificado interno dela uma única vez:
           </p>
-          <button
-            type="button"
-            onClick={handleOpenCertWindow}
-            className="w-full h-10 rounded-xl bg-cyan-600/30 hover:bg-cyan-600/50 border border-cyan-500/50 text-cyan-200 text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+
+          <a
+            href={tvIp ? `https://${tvIp.trim()}:3001` : '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full h-11 rounded-xl bg-cyan-600 hover:bg-cyan-500 border border-cyan-400/50 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-md shadow-cyan-600/20"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>Abrir para Aceitar Certificado da TV</span>
-          </button>
-          <span className="text-[10px] text-slate-500">
-            (Na página que abrir, clique em &quot;Avançado&quot; &gt; &quot;Continuar para {tvIp} (não seguro)&quot; e volte para cá).
-          </span>
+            <ExternalLink className="w-4 h-4" />
+            <span>Passo 1: Liberar Certificado da TV (Toque Aqui)</span>
+          </a>
+
+          <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-300 space-y-1">
+            <p className="font-semibold text-cyan-400">O que fazer na página que abrir:</p>
+            <p>1. O navegador vai avisar: <em>&quot;Sua conexão não é privada&quot;</em> ou <em>&quot;Aviso de segurança&quot;</em>.</p>
+            <p>2. Toque em <strong>&quot;Avançado&quot;</strong> e depois em <strong>&quot;Ir para {tvIp || 'IP'} (não seguro)&quot;</strong>.</p>
+            <p>3. Feche a aba e volte aqui no app.</p>
+            <p>4. Toque no botão verde abaixo <strong>&quot;Salvar &amp; Conectar à TV&quot;</strong>.</p>
+          </div>
         </div>
 
         {/* App Preferences */}

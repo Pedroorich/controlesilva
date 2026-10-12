@@ -53,12 +53,20 @@ class LGWebOSClient {
     this.isConnecting = true;
     this.setStatus('connecting', `Conectando a ${device.name} (${device.ip})...`);
 
-    // In modern browsers over HTTPS (like Vercel), wss:// on port 3001 is preferred.
-    // If running over HTTP or local, ws:// on port 3000 can also be used.
+    // In modern browsers over HTTPS (like Vercel), wss:// on port 3001 is required.
+    // Over HTTP (local network/IP), unencrypted ws:// on port 3000 avoids SSL certificate blocks.
     const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
-    const wsUrl = isHttps || device.port === 3001
-      ? `wss://${device.ip}:${device.port || 3001}`
-      : `ws://${device.ip}:${device.port || 3000}`;
+    let targetPort = device.port;
+    if (isHttps) {
+      targetPort = 3001;
+    } else {
+      // In HTTP mode, port 3000 is unencrypted and connects immediately without certificate issues
+      targetPort = (!targetPort || targetPort === 3001) ? 3000 : targetPort;
+    }
+
+    const wsUrl = isHttps
+      ? `wss://${device.ip}:${targetPort}`
+      : `ws://${device.ip}:${targetPort}`;
 
     return new Promise((resolve) => {
       try {
@@ -71,7 +79,7 @@ class LGWebOSClient {
             this.isConnecting = false;
             this.setStatus(
               'error',
-              `Tempo esgotado ao conectar a ${device.ip}. Verifique se a TV está ligada na mesma rede Wi-Fi.`
+              `Tempo esgotado ao conectar a ${device.ip}:${targetPort}. Verifique se a TV está ligada na mesma rede Wi-Fi.`
             );
             resolve(false);
           }
@@ -93,8 +101,8 @@ class LGWebOSClient {
           clearTimeout(connectionTimeout);
           this.isConnecting = false;
           const msg = isHttps
-            ? `Falha ao conectar via WSS (${device.ip}:3001). Você pode precisar autorizar o certificado SSL da TV.`
-            : `Erro ao conectar a ${device.ip}. Verifique o IP e a rede Wi-Fi.`;
+            ? `Falha ao conectar via WSS (${device.ip}:3001). O navegador precisa autorizar o certificado SSL da TV para liberar a conexão.`
+            : `Erro ao conectar a ${device.ip}:${targetPort}. Verifique se a TV está ligada e na mesma rede Wi-Fi.`;
           this.setStatus('error', msg);
           resolve(false);
         };
@@ -205,9 +213,14 @@ class LGWebOSClient {
         // Initialize pointer socket for mouse trackpad and fast button input
         this.initPointerSocket();
       } else if (data.type === 'response') {
+        if (data.payload?.pairingType === 'PROMPT') {
+          this.setStatus('pairing_prompt', 'Olhe para a tela da TV e clique em "Permitir" usando o controle da TV.');
+        }
         if (data.payload?.socketPath) {
           this.connectPointerSocket(data.payload.socketPath);
         }
+      } else if (data.type === 'error') {
+        this.setStatus('error', `Aviso da TV: ${data.error || 'Acesso não autorizado na tela da TV'}`);
       }
     } catch (e) {
       console.warn('Error parsing message from TV:', e);
