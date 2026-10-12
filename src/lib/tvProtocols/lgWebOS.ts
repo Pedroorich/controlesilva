@@ -47,7 +47,6 @@ class LGWebOSClient {
   }
 
   public async connect(device: TVDevice): Promise<boolean> {
-    if (this.isConnecting) return false;
     this.disconnect();
     this.currentDevice = device;
     this.isConnecting = true;

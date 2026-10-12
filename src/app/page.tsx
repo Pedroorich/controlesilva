@@ -19,6 +19,7 @@ import { lgClient } from '@/lib/tvProtocols/lgWebOS';
 import {
   loadSettings,
   saveSettings,
+  updateDevice,
   DEFAULT_SETTINGS,
 } from '@/lib/deviceStore';
 import {
@@ -82,6 +83,28 @@ export default function RemoteControlPage() {
     saveSettings(newSettings);
   };
 
+  const handleUpdateIp = (newIp: string) => {
+    const trimmed = newIp.trim();
+    if (!trimmed) return;
+    const baseDevice: TVDevice = activeDevice || {
+      id: 'tv_lg_sala',
+      name: 'Smart TV LG',
+      brand: 'lg_webos',
+      ip: '192.168.1.196',
+      port: 3001,
+      isDefault: true,
+    };
+    const updatedDevice: TVDevice = {
+      ...baseDevice,
+      ip: trimmed,
+      port: baseDevice.port || 3001,
+      brand: 'lg_webos',
+    };
+    const updatedSettings = updateDevice(updatedDevice);
+    setSettings(updatedSettings);
+    remoteManager.connect(updatedDevice);
+  };
+
   const handleConnectDevice = (device: TVDevice) => {
     remoteManager.connect(device);
   };
@@ -135,6 +158,7 @@ export default function RemoteControlPage() {
           device={activeDevice}
           onReconnect={handleReconnect}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          onUpdateIp={handleUpdateIp}
         />
 
         {/* Main Remote Layout */}

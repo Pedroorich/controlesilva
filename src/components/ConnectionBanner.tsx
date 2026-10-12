@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ConnectionStatus, TVDevice } from '@/lib/tvProtocols/types';
 import {
   AlertCircle,
@@ -13,6 +13,8 @@ import {
   Tv,
   CheckCircle2,
   Settings,
+  Save,
+  Check,
 } from 'lucide-react';
 
 interface ConnectionBannerProps {
@@ -21,6 +23,7 @@ interface ConnectionBannerProps {
   device: TVDevice;
   onReconnect: () => void;
   onOpenSettings: () => void;
+  onUpdateIp: (newIp: string) => void;
 }
 
 export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
@@ -29,13 +32,36 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
   device,
   onReconnect,
   onOpenSettings,
+  onUpdateIp,
 }) => {
   const [showTvMenuGuide, setShowTvMenuGuide] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [customIp, setCustomIp] = useState(device.ip || '192.168.1.196');
+  const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Keep input in sync with device.ip whenever device updates
+  useEffect(() => {
+    if (device.ip) {
+      setCustomIp(device.ip);
+    }
+  }, [device.ip]);
+
+  const handleSaveIp = () => {
+    const clean = customIp.trim();
+    if (!clean) return;
+    onUpdateIp(clean);
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 2500);
+  };
 
   const handleRetry = () => {
     setIsRetrying(true);
-    onReconnect();
+    // Make sure latest IP from input is applied before retry
+    if (customIp.trim() && customIp.trim() !== device.ip) {
+      onUpdateIp(customIp.trim());
+    } else {
+      onReconnect();
+    }
     setTimeout(() => setIsRetrying(false), 2000);
   };
 
@@ -55,9 +81,9 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
               🔔 Olhe para a tela da TV agora!
             </h4>
             <p className="text-xs text-amber-100/90 leading-relaxed">
-              Uma mensagem apareceu no canto da tela da sua TV LG pedindo para autorizar a conexão do controle.
+              Uma mensagem apareceu no canto da tela da sua TV LG pedindo autorização para conectar o controle.
             </p>
-            <div className="mt-1 p-2 rounded-xl bg-amber-950/60 border border-amber-800/60 text-xs font-semibold text-amber-300">
+            <div className="mt-1 p-2.5 rounded-xl bg-amber-950/70 border border-amber-800/70 text-xs font-semibold text-amber-300">
               👉 Clique em &quot;Permitir&quot; ou &quot;Sim&quot; na TV usando o controle ou botões do aparelho.
             </div>
           </div>
@@ -73,17 +99,17 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
         <div className="p-3.5 rounded-2xl bg-blue-950/40 border border-blue-800/60 flex items-center gap-3 text-xs text-blue-200">
           <RefreshCw className="w-4 h-4 text-blue-400 animate-spin shrink-0" />
           <div className="flex-1">
-            <span className="font-semibold block">Conectando à TV ({device.ip})...</span>
-            <span className="text-[11px] text-blue-300/80">Aguardando resposta do sistema LG webOS...</span>
+            <span className="font-semibold block">Conectando a {customIp || device.ip}...</span>
+            <span className="text-[11px] text-blue-300/80">Aguardando resposta da Smart TV LG...</span>
           </div>
         </div>
       </div>
     );
   }
 
-  // Disconnected or Error state: Provide the complete resolution guide
+  // Disconnected or Error state
   const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
-  const targetIp = device.ip || '192.168.1.196';
+  const targetIp = customIp.trim() || device.ip || '192.168.1.196';
   const certUrl = `https://${targetIp}:3001`;
 
   return (
@@ -96,9 +122,9 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
               <ShieldAlert className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-white">Como Conectar na TV LG</h3>
-              <p className="text-[11px] text-rose-400">
-                IP: <span className="font-mono font-semibold text-white">{targetIp}</span> • Porta: <span className="font-mono font-semibold text-white">3001</span>
+              <h3 className="text-xs font-bold text-white">Assistente de Conexão LG</h3>
+              <p className="text-[11px] text-rose-300">
+                Porta Segura: <span className="font-mono font-bold text-white">3001</span> (Padrão LG webOS)
               </p>
             </div>
           </div>
@@ -107,21 +133,57 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
             onClick={onOpenSettings}
             type="button"
             className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
-            title="Abrir configurações de IP"
+            title="Mais configurações"
           >
             <Settings className="w-3.5 h-3.5" />
-            <span>Editar IP</span>
+            <span>Mais Opções</span>
           </button>
         </div>
 
+        {/* Quick IP Input & Save */}
+        <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <label className="text-[11px] font-semibold text-slate-300">
+              Endereço IP da sua TV LG:
+            </label>
+            {savedSuccess && (
+              <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1 animate-in fade-in">
+                <CheckCircle2 className="w-3 h-3" />
+                IP Salvo com sucesso!
+              </span>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={customIp}
+              onChange={(e) => setCustomIp(e.target.value)}
+              placeholder="Ex: 192.168.1.196"
+              className="flex-1 h-10 px-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:border-cyan-400 outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleSaveIp}
+              className="h-10 px-3.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white text-xs font-bold transition-all shadow-md shadow-cyan-900/30 flex items-center gap-1.5"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>Salvar IP</span>
+            </button>
+          </div>
+          <span className="text-[10px] text-slate-400">
+            O IP fica salvo permanentemente no seu aparelho e não se perde ao fechar o app.
+          </span>
+        </div>
+
         {/* Clear explanation of 3001 and WSS */}
-        <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-300 leading-relaxed space-y-1.5">
+        <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-300 leading-relaxed space-y-1">
           <p>
-            💡 <strong className="text-cyan-400">O que é o número 3001?</strong> É a porta padrão de comunicação segura do sistema webOS da LG. <strong>Você NÃO precisa procurar esse número na sua TV!</strong> Ele já vem de fábrica.
+            💡 <strong className="text-cyan-400">O que é o 3001?</strong> É o número da porta de rede interna da LG. <strong>Você NÃO precisa procurar esse número na sua TV!</strong> Ele já vem fixo de fábrica no sistema webOS.
           </p>
           {isHttps && (
             <p>
-              🔒 <strong className="text-amber-400">Por que falhou no WSS?</strong> Como este controle roda na web com HTTPS (Vercel), o navegador do celular bloqueia a conexão com a TV até você autorizar o certificado SSL interno da LG uma única vez.
+              🔒 <strong className="text-amber-400">Por que falhou no WSS?</strong> Como o app roda em site seguro (HTTPS), os navegadores bloqueiam a TV até você autorizar o certificado interno da LG uma única vez.
             </p>
           )}
         </div>
@@ -132,7 +194,7 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
           {isHttps && (
             <div className="flex flex-col gap-1.5">
               <span className="text-[11px] font-semibold text-slate-300">
-                1º Passo: Autorizar o certificado no navegador
+                1º Passo: Liberar o certificado no navegador
               </span>
               <a
                 href={certUrl}
@@ -141,13 +203,13 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
                 className="w-full h-11 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 active:scale-[0.98] border border-cyan-400/50 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md shadow-cyan-900/30"
               >
                 <ExternalLink className="w-4 h-4" />
-                <span>Toque Aqui para Desbloquear a Porta 3001</span>
+                <span>Toque Aqui para Desbloquear o IP {targetIp}</span>
               </a>
               <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[10px] text-slate-400 space-y-1">
                 <p className="font-semibold text-cyan-300">Na página que abrir:</p>
-                <p>• O navegador dirá: <em>&quot;Sua conexão não é particular&quot;</em> ou <em>&quot;Aviso de segurança&quot;</em>.</p>
+                <p>• O navegador vai avisar: <em>&quot;Sua conexão não é privada&quot;</em> ou <em>&quot;Aviso de segurança&quot;</em>.</p>
                 <p>• Toque em <strong>&quot;Avançado&quot;</strong> e depois em <strong>&quot;Ir para {targetIp} (não seguro)&quot;</strong> ou <strong>&quot;Continuar&quot;</strong>.</p>
-                <p>• Uma página vazia vai carregar. Feche essa aba e volte para cá!</p>
+                <p>• Uma página vazia vai carregar. Feche aquela aba e volte para cá!</p>
               </div>
             </div>
           )}
@@ -164,7 +226,7 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
               className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] border border-emerald-400/50 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-900/30"
             >
               <RefreshCw className={`w-4 h-4 ${isRetrying ? 'animate-spin' : ''}`} />
-              <span>{isRetrying ? 'Conectando...' : 'Conectar à TV Agora'}</span>
+              <span>{isRetrying ? 'Conectando...' : `Conectar à TV (${targetIp}) Agora`}</span>
             </button>
             <p className="text-[10px] text-slate-400 text-center">
               Assim que conectar, a TV vai exibir a mensagem de pareamento na tela. Basta clicar em <strong>&quot;Permitir&quot;</strong>!
@@ -196,7 +258,7 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
                 Ativar &quot;LG Connect Apps&quot; nas configurações da TV LG:
               </p>
               <p>
-                Algumas TVs LG desativam o controle remoto por Wi-Fi de fábrica. Para liberar:
+                Algumas TVs LG vêm com o controle por Wi-Fi desativado de fábrica. Para liberar:
               </p>
               <ol className="list-decimal list-inside space-y-1.5 text-slate-300">
                 <li>
@@ -209,7 +271,7 @@ export const ConnectionBanner: React.FC<ConnectionBannerProps> = ({
                   <strong>Em TVs LG webOS recentes (2021-2024):</strong> Vá em <strong>Geral</strong> &gt; <strong>Dispositivos</strong> &gt; <strong>Dispositivos Externos</strong> &gt; <strong>Conectar TV a Smartphones</strong> (ou <em>Ligar TV via Wi-Fi</em>) e deixe <strong>ATIVADO</strong>.
                 </li>
                 <li>
-                  Certifique-se de que o celular e a TV estão conectados na <strong>mesma rede Wi-Fi</strong> (ex: na rede 2.4GHz ou 5GHz do mesmo roteador).
+                  Certifique-se de que o celular e a TV estão conectados na <strong>mesma rede Wi-Fi</strong>.
                 </li>
               </ol>
             </div>

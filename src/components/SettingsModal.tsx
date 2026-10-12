@@ -40,35 +40,48 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const activeDevice =
     settings.devices.find((d) => d.id === settings.activeDeviceId) ||
     settings.devices[0] || {
-      id: 'tv_default',
+      id: 'tv_lg_sala',
       name: 'Smart TV LG',
       brand: 'lg_webos',
-      ip: '192.168.1.100',
+      ip: '192.168.1.196',
       port: 3001,
     };
 
-  const [tvName, setTvName] = useState(activeDevice.name);
-  const [tvIp, setTvIp] = useState(activeDevice.ip);
+  const [tvName, setTvName] = useState(activeDevice.name || 'Smart TV LG');
+  const [tvIp, setTvIp] = useState(activeDevice.ip || '192.168.1.196');
   const [tvPort, setTvPort] = useState(activeDevice.port || 3001);
   const [haptics, setHaptics] = useState(settings.hapticsEnabled);
   const [sound, setSound] = useState(settings.soundEnabled);
   const [showGuide, setShowGuide] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Sync state whenever modal is opened or active device changes
+  React.useEffect(() => {
+    if (isOpen) {
+      setTvName(activeDevice.name || 'Smart TV LG');
+      setTvIp(activeDevice.ip || '192.168.1.196');
+      setTvPort(activeDevice.port || 3001);
+      setHaptics(settings.hapticsEnabled);
+      setSound(settings.soundEnabled);
+    }
+  }, [isOpen, activeDevice, settings.hapticsEnabled, settings.soundEnabled]);
+
   if (!isOpen) return null;
 
   const handleSave = () => {
+    const finalIp = tvIp.trim() || '192.168.1.196';
     const updatedDevice: TVDevice = {
       ...activeDevice,
       name: tvName.trim() || 'Smart TV LG',
-      ip: tvIp.trim(),
+      ip: finalIp,
       port: Number(tvPort) || 3001,
       brand: 'lg_webos',
     };
 
-    const updatedDevices = settings.devices.map((d) =>
-      d.id === updatedDevice.id ? updatedDevice : d
-    );
+    const deviceExists = settings.devices.some((d) => d.id === updatedDevice.id);
+    const updatedDevices = deviceExists
+      ? settings.devices.map((d) => (d.id === updatedDevice.id ? updatedDevice : d))
+      : [updatedDevice, ...settings.devices];
 
     const updatedSettings: AppSettings = {
       ...settings,
@@ -84,7 +97,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setTimeout(() => {
       setSavedSuccess(false);
       onClose();
-    }, 600);
+    }, 500);
   };
 
   const handleOpenCertWindow = () => {
